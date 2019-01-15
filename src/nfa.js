@@ -6,26 +6,24 @@ class Nfa {
 
     getNextStates(state, epsilonedStates = []) {
         epsilonedStates.push(state);
-        if (!this.isMultipleStatesPresent(state)) return [state];
-        const eStates = this.tuple.delta[state][this.epsilon];
-        const temp = eStates.filter(el => !epsilonedStates.includes(el))
-        temp.map(st => this.getNextStates.call(this, st, epsilonedStates));
+        const nextEpsilonState = this.getNextStateForState(state, this.epsilon);
+        if (nextEpsilonState.length == 0) return [state];
+        nextEpsilonState.filter(state => !epsilonedStates.includes(state))
+            .map(st => this.getNextStates.call(this, st, epsilonedStates));
         return epsilonedStates;
     }
 
-    isMultipleStatesPresent(state) {
-        return this.tuple.delta[state] && this.tuple.delta[state][this.epsilon];
+    getNextStateForState(state, alphabet) {
+        return this.tuple.delta[state] && this.tuple.delta[state][alphabet]
+            ? this.tuple.delta[state][alphabet] : [];
     }
 
     doesAccept(message) {
-        const splitedMessage = message.split("");
         const startStates = this.getNextStates(this.tuple.startState);
-        const lastStates = splitedMessage.reduce((accum, currentAlphabet) => {
-            const nextStates = accum.map(state => this.tuple.delta[state] && this.tuple.delta[state][currentAlphabet]).filter(s => s).flat();
-            return nextStates.map(sta => this.getNextStates(sta)).flat();
-        }, startStates);
-        const shouldAccept = lastStates.some(state => this.tuple.finalState.includes(state));
-        return shouldAccept;
+        return message.split("").reduce((accum, currentAlphabet) => {
+            const nextStates = accum.flatMap(state => this.getNextStateForState(state, currentAlphabet));
+            return nextStates.flatMap(state => this.getNextStates(state));
+        }, startStates).some(state => this.tuple.finalState.includes(state));
     }
 };
 
