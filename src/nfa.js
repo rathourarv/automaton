@@ -1,3 +1,5 @@
+const Converter = require('./convertToDfa');
+
 class Nfa {
     constructor(tuple) {
         this.tuple = tuple;
@@ -13,17 +15,26 @@ class Nfa {
         return epsilonedStates;
     }
 
+    getStartStates() {
+        return this.getNextStates(this.tuple.startState);
+    }
+
     getNextStateForState(state, alphabet) {
         return this.tuple.delta[state] && this.tuple.delta[state][alphabet]
             ? this.tuple.delta[state][alphabet] : [];
     }
 
     doesAccept(message) {
-        const startStates = this.getNextStates(this.tuple.startState);
         return message.split("").reduce((accum, currentAlphabet) => {
             const nextStates = accum.flatMap(state => this.getNextStateForState(state, currentAlphabet));
             return nextStates.flatMap(state => this.getNextStates(state));
-        }, startStates).some(state => this.tuple.finalState.includes(state));
+        }, this.getStartStates()).some(state => this.tuple.finalState.includes(state));
+    }
+
+    convert() {
+        const startStates = this.getStartStates();
+        const converter = new Converter(this.tuple);
+        return converter.convert(startStates, this.getNextStates.bind(this));
     }
 };
 

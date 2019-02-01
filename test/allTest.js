@@ -32,7 +32,6 @@ describe('Automaton', function() {
         nfasData.forEach(function(nfaData) {
             describe(nfaData.name, function () {
                 let nfa = createNfa(nfaData.tuple.states, nfaData.tuple.alphabets, nfaData.tuple.delta, nfaData.tuple["start-state"], nfaData.tuple["final-states"]);
-
                 nfaData["pass-cases"].forEach(function (validInput) {
                     it(`${validInput} should be accepted`, function () {
                         assert.isTrue(nfa.doesAccept(validInput))
@@ -42,6 +41,26 @@ describe('Automaton', function() {
                 nfaData['fail-cases'].forEach(function (invalidInput) {
                     it(`${invalidInput} should be rejected`, function () {
                         assert.isFalse(nfa.doesAccept(invalidInput))
+                    })
+                });
+            })
+        });
+    });
+
+    describe('Nfa to Dfa',function () {
+        nfasData.forEach(function(nfaData) {
+            describe(nfaData.name, function () {
+                let nfa = createNfa(nfaData.tuple.states, nfaData.tuple.alphabets, nfaData.tuple.delta, nfaData.tuple["start-state"], nfaData.tuple["final-states"]);
+                let dfa = nfa.convert();
+                nfaData["pass-cases"].forEach(function (validInput) {
+                    it(`${validInput} should be accepted`, function () {
+                        assert.isTrue(dfa.doesAccept(validInput))
+                    })
+                });
+
+                nfaData['fail-cases'].forEach(function (invalidInput) {
+                    it(`${invalidInput} should be rejected`, function () {
+                        assert.isFalse(dfa.doesAccept(invalidInput))
                     })
                 });
             })
